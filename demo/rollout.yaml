@@ -40,7 +40,7 @@ spec:
     spec:
       containers:
       - name: rollouts-demo
-        image: gcr.io/fetch-ai-sandbox/argo-test:stable
+        image: argoproj/rollouts-demo:purple
         ports:
         - name: http
           containerPort: 8080
