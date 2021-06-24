@@ -1,0 +1,51 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: rollouts-demo
+  annotations:
+    notifications.argoproj.io/subscribe.on-rollout-step-completed.slack: testing
+    notifications.argoproj.io/subscribe.on-rollout-completed.slack: testing
+    notifications.argoproj.io/subscribe.on-rollout-updated.slack: testing
+    notifications.argoproj.io/subscribe.on-scaling-replica-set.slack: testing
+    notifications.argoproj.io/subscribe.on-purple.slack: testing
+    notifications.argoproj.io/subscribe.on-rollout-step-completed.gmail: aman.au06@gmail.com
+    notifications.argoproj.io/subscribe.on-rollout-completed.gmail: aman.au06@gmail.com
+    notifications.argoproj.io/subscribe.on-rollout-updated.gmail: aman.au06@gmail.com
+    notifications.argoproj.io/subscribe.on-scaling-replica-set.gmail: aman.au06@gmail.com
+    notifications.argoproj.io/subscribe.on-purple.gmail: aman.au06@gmail.com
+spec:
+  replicas: 1
+  strategy:
+    canary:
+      canaryService: rollouts-demo-canary
+      stableService: rollouts-demo-stable
+      trafficRouting:
+        istio:
+          virtualService:
+            name: rollouts-demo-vsvc
+            routes:
+            - primary # At least one route is required
+      steps:
+      - setWeight: 50
+      - pause: {}
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: rollouts-demo
+  template:
+    metadata:
+      labels:
+        app: rollouts-demo
+        istio-injection: enabled
+    spec:
+      containers:
+      - name: rollouts-demo
+        image: gcr.io/fetch-ai-sandbox/argo-test:stable
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+        resources:
+          requests:
+            memory: 32Mi
+            cpu: 5m
